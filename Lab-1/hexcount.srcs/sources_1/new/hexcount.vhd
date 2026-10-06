@@ -31,6 +31,9 @@ architecture Behavioral of hexcount is
 	signal clk_r : std_logic := '0'; -- Added clk signal which will run slower than the clk from the board
 	signal clk_ct : std_logic_vector(2 downto 0) := "000"; -- Added clk_ct to track cycles of system clock; also used to control dig
 	
+	signal clk_r_ct : integer range 0 to 7 := 0;
+    signal loc_ct : integer range 0 to 49999999 := 0;
+	
   begin
     C1 : counter
       port map (
@@ -48,14 +51,31 @@ architecture Behavioral of hexcount is
 	   
 	   -- Add clocked process which will change the value of clk_r every 10th cycle of clk_100MHz
 	   process(clk_100MHz)
-	   begin
-	     if rising_edge(clk_100MHz) then
-	       if (clk_ct = "111") then
-	         clk_r <= not clk_r;
-	         clk_ct <= "000";
-	       else
-	         clk_ct <= std_logic_vector(unsigned(clk_ct) + 1);
-	       end if;
-	     end if;
-	   end process;
+       begin
+            if rising_edge(clk_100MHz) then
+        
+                -- Slowing down clk_r
+                if clk_r_ct = 7 then
+                    clk_r <= not clk_r;
+                    clk_r_ct <= 0;
+                else
+                    clk_r_ct <= clk_r_ct + 1;
+                end if;
+        
+                -- Moving the hex digit between the 8 displays
+                if loc_ct = 49999999 then
+                    loc_ct <= 0;
+        
+                    if clk_ct = "111" then
+                        clk_ct <= "000";
+                    else
+                        clk_ct <= std_logic_vector(unsigned(clk_ct) + 1);
+                    end if;
+        
+                else
+                    loc_ct <= loc_ct + 1;
+                end if;
+        
+            end if;
+        end process;
 end Behavioral;
