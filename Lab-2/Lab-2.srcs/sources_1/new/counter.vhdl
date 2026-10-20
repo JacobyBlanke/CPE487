@@ -29,11 +29,11 @@ architecture Behavioral of counter is
 	signal fsm_in : std_logic;
   signal fsm_out : std_logic;
   signal state : std_logic_vector (2 downto 0);
-  signal add : std_logic := '0'; --high for add, low for sub
+  signal add : std_logic := '0'; --low for add, high for sub
+  signal state_digit : std_logic_vector(3 downto 0); -- state as a hex digit, 1..5
 
 begin
-  fsm_in <= cnt(26);
-
+  fsm_in <= cnt(27);
   
   fsm00011 : fsm
 	port map (
@@ -60,7 +60,10 @@ begin
  
 		end if;
 	end process;
+	
+	state_digit <= ('0' & state) + 1;
 
-  count <= cnt (38 DOWNTO 23); -- 16 bits
-	mpx <= cnt (18 DOWNTO 17); -- 2 bits
+  --count <= cnt (38 DOWNTO 23); -- 16 bits
+	count <= state_digit & cnt (34 DOWNTO 23); -- 4 + 12 = 16 bits
+	mpx <= cnt(18 DOWNTO 17); -- 2 bit
 end Behavioral;
